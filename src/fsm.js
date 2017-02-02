@@ -12,6 +12,8 @@ class FSM {
         this.CurrentConfig = config;
         this.CurrentState = config.initial;
 
+        this.BufferForUndo = new Array();
+        this.BufferForRedo = new Array();
     }
 
     /**
@@ -32,9 +34,13 @@ class FSM {
             throw new Error();
         }
 
-        this.PreviousState = this.CurrentState;
+        this.BufferForUndo.push(this.CurrentState);
         this.CurrentState = state;
-        this.StateBeforeUndo = null;
+
+        if (this.BufferForRedo.length > 0)
+        {
+            this.BufferForRedo = [];
+        }
     }
 
     /**
@@ -49,9 +55,13 @@ class FSM {
             throw new Error();           
         }
 
-        this.PreviousState = this.CurrentState;
+        this.BufferForUndo.push(this.CurrentState);
         this.CurrentState = BufferForNewState;
-        this.StateBeforeUndo = null;
+
+        if (this.BufferForRedo.length > 0)
+        {
+            this.BufferForRedo = [];
+        }
     }
 
     /**
@@ -92,15 +102,14 @@ class FSM {
      * @returns {Boolean}
      */
     undo() {
-        if (this.PreviousState == null || this.PreviousState == undefined)
+        if (this.BufferForUndo.length == 0)
         {
             return false;
         }
         else
         {
-            this.StateBeforeUndo = this.CurrentState;
-            this.CurrentState = this.PreviousState;
-            this.PreviousState = null;
+            this.BufferForRedo.push(this.CurrentState)
+            this.CurrentState = this.BufferForUndo.pop();
 
             return true;
         }
@@ -112,15 +121,14 @@ class FSM {
      * @returns {Boolean}
      */
     redo() {
-        if (this.StateBeforeUndo == null || this.StateBeforeUndo == undefined)
+        if (this.BufferForRedo.length == 0)
         {
             return false;
         }
         else
         {
-            this.PreviousState = this.CurrentState;
-            this.CurrentState = this.StateBeforeUndo;
-            this.StateBeforeUndo = null;
+            this.BufferForUndo.push(this.CurrentState);
+            this.CurrentState = this.BufferForRedo.pop();
 
             return true;
         }
@@ -130,8 +138,8 @@ class FSM {
      * Clears transition history
      */
     clearHistory() {
-        this.StateBeforeUndo = null;
-        this.PreviousState = null;
+        this.BufferForUndo = [];
+        this.BufferForRedo = [];
     }
 }
 
