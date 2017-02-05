@@ -55,20 +55,14 @@ class FSM {
             throw new Error();           
         }
 
-        this.BufferForUndo.push(this.CurrentState);
-        this.CurrentState = BufferForNewState;
-
-        if (this.BufferForRedo.length > 0)
-        {
-            this.BufferForRedo = [];
-        }
+        this.changeState(BufferForNewState);
     }
 
     /**
      * Resets FSM state to initial.
      */
     reset() {
-       this.CurrentState = this.CurrentConfig.initial;
+        this.changeState(this.CurrentConfig.initial);
     }
 
     /**
